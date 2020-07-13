@@ -1,0 +1,2 @@
+\contentsline {section}{\numberline {1}问题描述}{2}% 
+\contentsline {section}{\numberline {2}宽模版方法}{2}% 

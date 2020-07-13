@@ -1,0 +1,12 @@
+\contentsline {section}{\numberline {1}问题描述}{2}% 
+\contentsline {section}{\numberline {2}求解方法}{3}% 
+\contentsline {subsection}{\numberline {2.1}Oliker-Prussner method}{3}% 
+\contentsline {subsection}{\numberline {2.2}提升$u_h^{k}(x_i)$方法}{3}% 
+\contentsline {section}{\numberline {3}数值算例}{6}% 
+\contentsline {subsection}{\numberline {3.1}example1 $u\in C^\infty {}(\mathaccentV {bar}916{\Omega })$光滑算例}{6}% 
+\contentsline {subsection}{\numberline {3.2}example2 $u\in W_\infty ^2$分片光滑算例}{7}% 
+\contentsline {subsection}{\numberline {3.3}example3 $u\in W^2_p, p<2$ 含有奇点算例}{8}% 
+\contentsline {section}{\numberline {4}结果分析}{9}% 
+\contentsline {subsection}{\numberline {4.1}误差收敛阶}{9}% 
+\contentsline {subsection}{\numberline {4.2}Perron iteration过程收敛速度}{9}% 
+\contentsline {section}{\numberline {5}代码说明}{10}% 

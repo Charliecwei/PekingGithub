@@ -1,0 +1,679 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{xcolor}
+\usepackage{ctex}
+\usepackage{CJK}
+\usepackage{float}
+\usepackage{amsthm}
+\usepackage{geometry}
+\geometry{left=2.0cm,right=2.0cm,top=2.5cm,bottom=2.5cm}
+\usepackage{algorithmic}
+\usepackage{algorithm}           
+\newtheorem{myDef}{Definition}[subsection]
+\newtheorem{myTheo}{定理}[subsection]
+\newtheorem{mylem}{Lemma}[subsection]
+\newtheorem{mycor}{推论}[subsection]
+\newtheorem{myproof}{证明}[subsection]
+
+
+\usepackage{geometry} 
+\usepackage{indentfirst}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{setspace}
+\usepackage{geometry}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{multirow}
+\usepackage{blkarray}
+\usepackage{tikz}
+
+%%%
+\newtheorem{theorem}{定理}[subsection]
+\floatname{algorithm}{算法}
+
+
+\usepackage{geometry}      
+\geometry{left=2.5cm,right=2.5cm,top=3cm,bottom=3.5cm}    
+\usepackage{indentfirst}
+\usepackage{CJK}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{setspace}
+\usepackage{geometry}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{cite}
+\usepackage{fancyhdr}
+\usepackage{ctex}
+\usepackage{blkarray}
+
+
+\newtheorem{lemma}{引理}[subsection]
+\newtheorem{inference}{推论}[subsection]
+
+\lstset{ 
+    basicstyle=\tt,
+    rulesepcolor=\color{red!20!green!20!blue!20},
+    escapeinside=``,
+    xleftmargin=2em,xrightmargin=2em, aboveskip=1em,
+    framexleftmargin=1.5mm,
+    frame=shadowbox,
+    backgroundcolor=\color[RGB]{245,245,244},
+    keywordstyle=\color{blue}\bfseries,
+    identifierstyle=\bf,
+    numberstyle=\color[RGB]{0,192,192},
+    commentstyle=\it\color[RGB]{96,96,96},
+    stringstyle=\rmfamily\slshape\color[RGB]{128,0,0},
+    showstringspaces=false
+}
+
+
+
+\lstdefinestyle{C}{
+ language={[ANSI]C},
+ numbers=left,
+ numberstyle=\tiny,
+ basicstyle=\small\ttfamily,
+ stringstyle=\color{purple},
+ keywordstyle=\color{blue}\bfseries,
+ commentstyle=\color{olive},
+ directivestyle=\color{blue},
+ frame=shadowbox,
+ %framerule=0pt,
+ %backgroundcolor=\color{pink},
+ rulesepcolor=\color{red!20!green!20!blue!20}
+ %rulesepcolor=\color{brown}
+ %xleftmargin=2em,xrightmargin=2em,aboveskip=1em
+}
+
+
+\pagestyle{fancy}
+
+
+
+
+
+% Edit these as appropriate
+\newcommand\course{差分方法\uppercase\expandafter{\romannumeral2}}
+\newcommand\hwnumber{}                  % <-- homework number
+\newcommand\name{陈伟}                 % <-- Name
+\newcommand\ID{1901110037}           % <-- ID
+
+\pagestyle{fancyplain}
+\headheight 35pt
+\lhead{\name\\\ID}                 
+\chead{\textbf{\Large  差分方法\uppercase\expandafter{\romannumeral2} lab1\hwnumber}}
+\rhead{\course \\ \today}
+\lfoot{}
+\cfoot{}
+\rfoot{\small\thepage}
+\headsep 1.5em
+
+
+
+
+\title{差分方法\uppercase\expandafter{\romannumeral2}\\
+lab1\\
+Wide stencil finite difference method 算例\\
+陈伟\\
+1901110037}
+
+\begin{document}
+
+\maketitle % —— 显示标题
+\tableofcontents %—— 制作目录(目录是根据标题自动生成的)
+
+\newpage
+\section{问题描述}
+用宽模版的有限差分法求解2D的Monge-Ampère方程:
+$$\left\{\begin{aligned}
+\operatorname{det} D^{2} u &=f \quad \text { in } \Omega \subset \mathbb{R}^{2} \\
+u &=g \quad \text { on } \partial \Omega
+\end{aligned}\right.$$
+其中计算区域为单位正方形, 也即是$\Omega=(0,1)^2.$令$\bm{x}=(x,y)^T,\bm{x}_0=(0.5,05)$. 对于如下三个例子进行数值实验:
+\begin{itemize}
+\item Smooth and radial example:
+$$u(\bm{x})=\text{exp}(\vert{\bm{x}}\vert^2/2),\quad f(\bm{x})=(1+\vert{\bm{x}})\vert^2\text{exp}(\vert{\bm{x}}\vert^2).$$
+\item $C^1$ example:
+$$u(\boldsymbol{x})=\frac{1}{2}\left(\left(\left|\boldsymbol{x}-\boldsymbol{x}_{0}\right|-0.2\right)^{+}\right)^{2}, \quad f(\boldsymbol{x})=\left(1-\frac{0.2}{\left|\boldsymbol{x}-\boldsymbol{x}_{0}\right|}\right)^{+}.$$
+\item Twice differentiable in the interior domain, but has unbounded gradient near the boundary point $(1,1)$:
+$$u(\boldsymbol{x})=-\sqrt{2-|\boldsymbol{x}|^{2}}, \quad f(\boldsymbol{x})=2\left(2-|\boldsymbol{x}|^{2}\right)^{-2}.$$
+\end{itemize}
+边界$g(\bm{x})$可以通过真解获得. 分别用explicit solution method和Newton’s method 来解这个离散的非线性方程. 报告中应包含不同模版的$L^\infty{}$误差.
+
+\section{求解方法}
+\subsection{Wide stencil finite difference method}
+令$$\operatorname{MA} [\varphi] \left(x_{0}\right)=\min _{\left(w_{1}, \cdots, w_{d}\right) \in V}\left[\prod_{i=1}^{d}\left(\frac{\partial^{2} \varphi}{\partial w_{i}^{2}}\left(x_{0}\right)\right)^{+}-\sum_{i=1}^{d}\left(\frac{\partial^{2} \varphi}{\partial w_{i}^{2}}\left(x_{0}\right)\right)^{-}\right]$$
+在$\varphi$是凸函数下有:
+$$\operatorname{MA}[\varphi]=\operatorname{det}D^2\varphi$$
+对于凸区域$\Omega$,以及网格剖分,给定$\bm{x}_h\in \Omega,$以及方向$\bm{e}$,有$\rho_\pm\in(0,1]$使得$\bm{x}_h\pm \rho_\pm h\bm{e}\in\partial\Omega\cup\bar{\Omega}_h$. 当$\bm{x}_h\pm  h\bm{e}$落在$\Omega_h$内部网格点时,$\rho_\pm$均为1; 当落在外边界时,$\rho_\pm$为使得$\bm{x}_h\pm \rho_\pm h\bm{e}$收缩回边界的比例.令
+\begin{equation}\label{Delta_eu}
+\begin{array}{c}
+\Delta_e u_{h}\left(x_{h}\right) = \frac{2}{\left(\rho_{+}+\rho_{-}\right)|e|^{2} h^{2}}\left[\frac{u_{h}\left(x_{h}+\rho_{+} h e\right)-u_{h}\left(x_{h}\right)}{\rho_{+}}-\frac{u_{h}\left(x_{h}\right)-u_{h}\left(x_{h}-\rho_{-} he\right)}{\rho_{-}}\right]
+\end{array}
+\end{equation}
+
+以及$G_\theta\subset{}(\mathbb{Z}^d)^d$(参数$d\theta$)为$\mathbb{R}^d$上的正交基组全体$V$的离散.并定义:
+$$\operatorname{MA}_{h , \theta}^{WS}[u_{h}] \left(x_{h}\right) \triangleq \min _{\left(v_{1}, \cdots,v_d\right) \in G_{\theta}} \prod_{i=1}^{d}\left(\Delta_{v_{i}} u_{h}\left(x_{n}\right)\right)^{+}$$
+对于Monge-Ampère方程的宽模版法也即是:
+$$\left\{\begin{aligned}
+\operatorname{MA}_{h, \theta}^{WS} \left[u_{h}\right]\left(x_{h}\right) &=f\left(x_{h}\right) & \forall x_{h} \in \Omega_{n} \\
+u_{h}\left(x_{h}\right) &=g\left(x_{h}\right) &  \forall x_{h} \in \partial\Omega_{h}
+\end{aligned}\right.$$
+对于给定的参数$\delta>0$,将上述$\operatorname{MA}_{h, \theta}^{WS}$换成
+$$\operatorname{MA}_{h,\theta,\delta}^{WS}\left[u_{h}\right]\left(x_{h}\right) \triangleq {\min _{\left(v_{1}, \cdots, v_{d}\right) \in G_{\theta}}}^{\delta}\left[ \prod_{i=1}^{d}\left(\Delta_{v_{i}} u_{h}\left(x_{h}\right)\right)^{+, \delta}\right]$$
+也即得到正则化版本.
+总之,我们要求解方程组$F[u]=f,$其中$F$为$\operatorname{MA}_{h,\theta}^{WS}$或者$\operatorname{MA}_{h,\theta,\delta}^{WS}$, 用以下两种迭代法来求解.
+
+\subsection{Explicit solution method}
+迭代格式为
+$$u^{n+1}=u^n+dt(F[u]-f)$$
+其中$dt\thicksim\mathcal{O}(h^2)$,2D case 的一个选择为:
+$$d t=\frac{h^{2}}{2}\left(\max _{x_h}
+\max _{\left(v_{1}, v_{2}\right) \in G_{\theta}} \left[\left(\Delta_{v_{1}} u^{n}\left(x_{h}\right)\right)^{+}+\left(\Delta_{v_{2}} u^{n}\left(x_{h}\right)\right)^{+}\right]\right)^{-1}$$
+
+\subsection{Newton's method }
+迭代格式为:
+$$u^{n+1}=u^n-\alpha v^n$$
+其中$0<\alpha<1$,为使得残量$\Vert{F(u^n)-f}\Vert$下降的参数.矫正项
+$v^n$为满足:
+$$\nabla{}_uF[u^n]v^n=F[u^n]-f$$
+
+\section{算法}
+观察以上方法，不难发现主要分为两部分:
+
+1. $F[u]$的建立;
+
+2. 迭代法求解$F[u]=f.$\\
+下面我们分两部分来构造上述两部分.
+
+\subsection{构建$F[u]$}
+无论$F$为$\operatorname{MA}_{h,\theta}^{WS}$或者$\operatorname{MA}_{h,\theta,\delta}^{WS}$,其中最主要的部分都是:
+\begin{itemize}
+\item $G_\theta$的构建;
+\item 对于给定的方向$e$, 以及$x_h\in \Omega_h$, $\Delta{}_eu_h(x_h)$的构建;
+\end{itemize}
+然后再根据$\operatorname{MA}_{h,\theta}^{WS}$和$\operatorname{MA}_{h,\theta,\delta}^{WS}$的方式去构建即可.
+\subsubsection{$G_\theta$算法}
+对于给定的模版宽度WideN($\text{WideN}=1,2,3,\cdots{}$),函数$G_\theta(\text{WideN})$输出模版宽度为WideN的正交基中方向在一象限的方向的集合$\{\bm{e}\in \mathbb{Z}^2:\bm{e}_1,\bm{e}_2=0,1,2,\cdots{},N;\ |\bm{e}|\neq0\}$, 而且一旦$\bm{e}$定下来了,则$\bm{e}^\perp=(-\bm{e}_2,\bm{e}_1)$也就给定了.下面是$G_\theta$的算法.
+
+\begin{algorithm}[H]
+%\label{G_theta}
+\caption{计算$G_\theta$} 
+\begin{algorithmic}[]
+\setstretch{1.2}
+\STATE 输入 WideN\\
+
+\STATE l = 0;
+ 
+\STATE  \textbf{For} i = 1:N
+
+\STATE \qquad \textbf{For} j = 0:N-1
+
+\STATE \qquad \qquad l = l+1;
+\STATE \qquad \qquad k = gcd(i,j);
+
+\STATE \qquad \qquad $G_\theta$(l,1) = i/k, $G_\theta$(l,2) = j/k;
+
+\STATE \qquad \textbf{end}
+
+\STATE \textbf{end}
+
+\STATE 删去$G_\theta$中以一行为一项来看重复的项
+
+\STATE 输出$G_\theta$
+
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsubsection{$\Delta_eu_h$算法}
+对于给定的方向$e$以及所有内点值$u_h,$我们要计算对应内点的$\Delta_eu_h$的值. 对于$x_h\in \Omega_h,$我们先找$x_{h,\pm}=x_h\pm he$, 若$x_{h,\pm}\in\Omega_h,$则$\rho_\pm=1$,若有$x\pm\notin\Omega_h,$ 则根据边界比例来缩小$\rho_\pm$,使得$x_{h,\pm}=x_h\pm\rho_\pm h e\in\partial\Omega$.  最后再根据\eqref{Delta_eu},即可得到$\Delta_eu_h$.我们这里给定$u_h$为原来2D内点数据按列拉升之后得到的一维数组,这样我们可以根据$x_{h,\pm}$的是否位于该数组中来判断是否越出边界,下面给出该算法.(由于后面用Netwon法时候可能每个点的方向可能不一样,故这里我们的$e$可能是(1,2)的数组,也可能是(Nu,2)的数组,其中Nu为$u_h$的长度.)
+
+\begin{algorithm}[H]
+%\label{G_theta}
+\caption{计算$\Delta_eu_h$} 
+\begin{algorithmic}[]
+\setstretch{1.2}
+\STATE 输入$u_h,e,h$\\
+
+\STATE 得到$u_h$的长度Nu
+
+\STATE \textbf{IF} size($e$,1)==1
+
+
+\STATE\qquad $e$ = repmat($e$,size($u_h$));
+ 
+\STATE  \textbf{For} s=1:Nu
+
+\STATE\qquad $u_{h,s}$对应二维数组的横纵指标$i_s,j_s$; 令$\rho_{s,\pm}=1.$
+
+\STATE \qquad 计算$u_{h,s}$依赖值$u_{h,s,\pm}$的横纵指标$$i_{s,\pm}=i_s\pm \rho_{s,\pm}e(s,1),\qquad j_{s,\pm}=j_s\pm \rho_{s,\pm}e(s,2)$$
+
+\STATE\qquad 根据$i_{s,\pm},j_{s,\pm}$来得到按列拉升后$u_{h,s,\pm}$的位置$s_{\pm}$;
+
+\STATE \qquad 如果$s_\pm$均是$1:Nu$中的某个整数,则令:
+$u_{h,\pm,s}=u_{h,s_\pm}$;
+
+\STATE \qquad 否则若$s_+$超标, 则根据坐标值$x_{s_+}=(i_{s,+}h,j_{s,+}h)$以及$\partial\Omega$来修正收缩比例$\rho_+$,使得重新得到的$x_{s_+}\in \partial\Omega$, 再令$u_{h,+,s}=g(x_{s_+})$,若$s_-$超标,同理处理.
+
+\STATE \qquad 计算:
+$$\begin{array}{c}
+\Delta_{e_s}u_{h,s} = \frac{2}{\left(\rho_{+,s}+\rho_{-,s}\right)|e_s|^{2} h^{2}}\left(\frac{u_{h,+,s}-u_{h,s}}{\rho_{+,s}}-\frac{u_{h,s}-u_{h,-,s}}{\rho_{-,s}}\right)
+\end{array}$$
+
+\STATE \textbf{end}
+
+\STATE 输出$\Delta_eu_h$
+\end{algorithmic}
+\end{algorithm}
+
+这样我们得到了模版$G_\theta$与$\Delta_eu_h$的算法,剩下的再根据$\operatorname{MA}_{h,\theta}^{WS}$和$\operatorname{MA}_{h,\theta,\delta}^{WS}$的方式即可构建得到对应的$F[u]$
+
+\subsection{迭代法求解$F[u]=f$}
+Explicit solution method 方法按照对应的格式来即可,我们主要讨论Newton's method.其中困难的一步是$\nabla{}_uF[u]$矩阵的构建. 再进一步，两种方法均会用到的是$\nabla{}_u\Delta{}_eu_h$.对于不同的点$x_h,$对应的$e$方向可能也不同.
+
+\subsubsection{$\nabla{}_u\Delta{}_eu_h$算法}
+对于给定的点$x_h,$我们求$\nabla{}_u\Delta{}_eu_h(x_h)$,而由\eqref{Delta_eu},我们需要知道对应的$\rho_\pm,$以及$x_h\pm\rho_\pm he$的位置.接算法2,我们有:
+
+
+\begin{algorithm}[H]
+%\label{G_theta}
+\caption{计算$\nabla{}_u\Delta_eu_h$} 
+\begin{algorithmic}[]
+\setstretch{1.2}
+\STATE 输入$u_h,e,h$\\
+
+\STATE 得到$u_h$的长度Nu
+
+\STATE \textbf{IF} size($e$,1)==1
+
+
+\STATE\qquad $e$ = repmat($e$,size($u_h$));
+ 
+\STATE  \textbf{For} s=1:Nu
+
+\STATE\qquad $u_{h,s}$对应二维数组的横纵指标$i_s,j_s$; 令$\rho_{s,\pm}=1.$
+
+\STATE \qquad 计算$u_{h,s}$依赖值$u_{h,s,\pm}$的横纵指标$$i_{s,\pm}=i_s\pm \rho_{s,\pm}e(s,1),\qquad j_{s,\pm}=j_s\pm \rho_{s,\pm}e(s,2)$$
+
+\STATE\qquad 根据$i_{s,\pm},j_{s,\pm}$来得到按列拉升后$u_{h,s,\pm}$的位置$s_{\pm}$;
+
+\STATE \qquad 如果$s_\pm$均是$1:Nu$中的某个整数,则令:
+$u_{h,\pm,s}=u_{h,s_\pm}$;
+
+\STATE \qquad 否则若$s_+$超标, 则根据坐标值$x_{s_+}=(i_{s,+}h,j_{s,+}h)$以及$\partial\Omega$来修正收缩比例$\rho_+$,使得重新得到的$x_{s_+}\in \partial\Omega$, 再令$u_{h,+,s}=g(x_{s_+})$,若$s_-$超标,同理处理.
+
+\STATE \qquad 计算:
+$$\begin{array}{c}
+\nabla{}_u\Delta_{e}u_{h}(s,s) = -\frac{2}{\left(\rho_{+,s}+\rho_{-,s}\right)|e_s|^{2} h^{2}}\left(\frac{1}{\rho_{+,s}}+\frac{1}{\rho_{-,s}}\right)
+\end{array}$$
+
+\STATE \qquad 若$1\leqslant s_+\leqslant Nu,$则
+$$\begin{array}{c}
+\nabla{}_u\Delta_{e}u_{h}(s,s_+) = -\frac{2}{\left(\rho_{+,s}+\rho_{-,s}\right)|e_s|^{2} h^{2}}\frac{1}{\rho_{+,s}}
+\end{array}$$
+
+\STATE \qquad 若$1\leqslant s_-\leqslant Nu,$则
+$$\begin{array}{c}
+\nabla{}_u\Delta_{e}u_{h}(s,s_-) = -\frac{2}{\left(\rho_{+,s}+\rho_{-,s}\right)|e_s|^{2} h^{2}}\frac{1}{\rho_{-,s}}
+\end{array}$$
+
+\STATE \textbf{end}
+
+\STATE 输出$\nabla{}_u\Delta_eu_h$
+\end{algorithmic}
+\end{algorithm}
+
+这样我们就可以分别得到$\operatorname{MA}_{h,\theta}^{WS}$和$\operatorname{MA}_{h,\theta,\delta}^{WS}$的梯度矩阵
+
+\subsubsection{$\nabla{}_u\operatorname{MA}_{h,\theta}^{WS}[u_h]$算法}
+用函数乘积的求导法则我们有:
+$$\nabla{}_u\operatorname{MA}_{h,\theta}^{WS}[u_h]=\sum_{i=1}^d\left[\textbf{diag}\left(\prod_{s\neq i}\Delta{}_{v^*_s}u_h\right)\nabla{}_u\Delta{}_{v^*_i}u_h\right]$$
+
+
+\begin{algorithm}[H]
+%\label{G_theta}
+\caption{计算$\nabla{}_u\operatorname{MA}_{h,\theta}^{WS}[u_h]$} 
+\begin{algorithmic}[]
+\setstretch{1.2}
+\STATE 输入$u_h,G_\theta,h$\\
+
+\STATE 令$\nabla{}_u\operatorname{MA}_{h,\theta}^{WS}[u_h]=0$.
+
+\STATE 在计算$\nabla{}_u\operatorname{MA}_{h,\theta}^{WS}[u_h]$同时得到每个点的最小正交基$v^*=(v^*_1,v^*_2,\cdots{},v^*_d)$.
+
+\STATE \textbf{For} i = 1:d
+
+\STATE  \qquad 调用算法3,输入$u_h,v^*_i,h,$得到对应的$\nabla{}_u\Delta{}_{v^*_i}u_h$
+
+\STATE  \qquad 更新
+$$\nabla{}_u\operatorname{MA}_{h,\theta}^{WS}[u_h]=\nabla{}_u\operatorname{MA}_{h,\theta}^{WS}[u_h]+\textbf{diag}\left(\prod_{s\neq i}\Delta{}_{v^*_s}u_h\right)\nabla{}_u\Delta{}_{v^*_i}u_h$$
+
+\STATE  \textbf{end}
+
+\STATE 输出$\nabla{}_u\operatorname{MA}_{h,\theta}^{WS}[u_h]$
+\end{algorithmic}
+\end{algorithm}
+
+这样我们就得到$\nabla{}_u\operatorname{MA}_{h,\theta}^{WS}[u_h]$.
+
+
+\subsubsection{$\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]$算法}
+由链式法则以及乘积的求导法则以及$\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]$的表达式,我们有:
+$$\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]=\partial_x{\min}^{\delta}(x,y)\nabla{}_u x+\partial_y{\min}^{\delta}(x,y)\nabla{}_u y$$
+其中
+$$\begin{aligned}
+x &= \prod_{i=1}^{d}\left(\Delta_{v_{i}} u_{h}\right)^{+, \delta}\\
+y &= \min _{\left(\hat{v}_{1}, \cdots, \hat{v}_{d}\right) \in G_{\theta}\setminus (v_1,\cdots{},v_d)} \delta\left[\prod_{i=1}^{d}\left(\Delta_{v_{i}} u_{h}\right)^{+, \delta}\right]
+\end{aligned}$$
+
+不难发现$\nabla{}_uy$可以递归计算. 所以主要是$\nabla{}_ux$的计算.有:
+$$\nabla_ux=\sum_{i=1}^n\left[\textbf{diag}\left(\prod_{s=\neq i}(\Delta{}_{v_s}u_h)^{+,\delta}\right)\nabla{}_u(\Delta{}_{v_i}u_h)^{+,\delta}\right]$$
+
+而关于$\nabla{}_u(\Delta{}_{v_i}u_h)^{+,\delta}$,有
+$$\begin{aligned}
+\nabla{}_u(\Delta{}_{v_i}u_h)^{+,\delta}=\frac{1}{2}\textbf{diag}\left(1+\frac{\Delta{}_{v_i}u_h}{\sqrt{(\Delta{}_{v_i}u_h})^2+\delta^2}\right)\nabla{}_u(\Delta{}_{v_i}u_h)
+\end{aligned}$$
+
+这样我们就得到了$\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]$的算法.
+
+\begin{algorithm}[H]
+%\label{G_theta}
+\caption{计算$\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]$} 
+\begin{algorithmic}[]
+\setstretch{1.2}
+\STATE 输入$u_h,G_\theta,h$\\
+
+\STATE 得到$G_\theta$中向量个数L
+\STATE 令$\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]=0$, 令$\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]=0$.
+
+\STATE \textbf{For} l = 1:L
+
+\STATE \qquad \textbf{IF} l==1
+
+\STATE \qquad \qquad 计算$\nabla{}_u\left(\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta}\right)$并赋值给$\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]$
+
+\STATE\qquad \qquad 计算$\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta}$,并赋值给$\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]$.
+
+\STATE \qquad \textbf{end}
+
+\STATE \qquad 计算$\nabla{}_u\left(\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta}\right)$与$\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta}$,
+
+\STATE \qquad  更新
+$$\begin{aligned}
+\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]&=\frac{1}{2}\textbf{diag}\left(1-\frac{\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]-\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta}}{\sqrt{(\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h])^2+(\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta})^2+\delta^2}}\right)\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]\\
+&+\frac{1}{2}\textbf{diag}\left(1-\frac{\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta}-\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]}{\sqrt{(\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h])^2+(\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta})^2+\delta^2}}\right)\nabla{}_u\left[\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta}\right]
+\end{aligned}$$
+
+\STATE \qquad 更新
+$$\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]={\min}^{\delta}\left(\prod_{i=1}^d(\nabla{}_{v_i^l}u_h)^{+,\delta},\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]\right)$$
+
+\STATE  \textbf{end}
+
+\STATE 输出$\nabla{}_u\operatorname{MA}_{h,\theta,\delta}^{WS}[u_h]$
+\end{algorithmic}
+\end{algorithm}
+
+这样，程序的主要部分就完成了. 后面部分是一些数值算例.
+
+\section{数值算例}
+
+下面对三个例子分别用Explicit solution method和Newton's method, 选取函数$u_0(x,y)=x^2+y^2$的值为迭代初值，取迭代终止条件为
+$$\Vert{u^{n+1}-u^n}\Vert_\infty{}\leqslant 1e-8\text{  or  迭代次数} \geqslant 5000$$
+得到的结果如下.
+
+取$h = 1/8,1/16,1/32$,模版宽度为$1,2,3,4$.
+
+关于非正则的Explicit solution method, 对于Examlpe1,很遗憾，达迭代上限后也没达收敛精度. 重新随机选取初值，结果也是如此。总之，需要很大的迭代步此方法才可能收敛.
+
+对于正则的Explicit solution method，分别取$\delta=10,1,10^{-2},$结果如下
+
+\begin{table}[ht!]
+\centering
+\caption{正则化Explicit solution method}
+\label{table}
+    \begin{tabular}{  c| c|c c|c c| c c }
+          \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline
+    \multicolumn{8}{c}{example1}\\
+         \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline   
+    \multirow{6}{*}{$\delta=10$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/8}&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c}{1/32}\\
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\
+&1&1495	&1.18e+00	&5000	&1.18e+00	&5000	&9.97e-01\\
+&2&665	&7.39e-01	&3600	&7.31e-01	&5000	&7.05e-01\\
+&3&390	&4.26e-01	&1965	&4.18e-01	&5000	&4.14e-01\\
+&4&304	&2.65e-01	&1459	&2.57e-01	&5000	&2.55e-01\\
+\iffalse
+    \cline{1-8}     	
+      \multirow{6}{*}{$\delta=1$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/8}&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c}{1/32}\\ 
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\ 
+
+&1&467	&7.01e-03	&2171	&5.60e-03	&5000	&1.91e-02\\
+&2&453	&1.89e-02	&1998	&2.03e-02	&5000	&2.86e-02\\
+&3&457	&4.35e-02	&1936	&4.63e-02	&5000	&5.43e-02\\
+&4&488	&6.00e-02	&1923	&6.38e-02	&5000	&7.22e-02\\
+
+\fi
+
+    \cline{1-8}     	
+      \multirow{6}{*}{$\delta=10^{-2}$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/8}&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c}{1/32}\\ 
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\ 
+
+&1&476	&3.55e-03	&2253	&2.01e-03	&5000	&1.60e-01\\
+&2&485	&1.69e-03	&2197	&9.94e-04	&5000	&4.90e-02\\
+&3&497	&7.56e-03	&2264	&1.43e-03	&5000	&6.41e-02\\
+&4&536	&1.52e-02	&2316	&3.29e-03	&5000	&7.57e-02\\
+
+      \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline
+    \multicolumn{8}{c}{example2}\\
+         \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline
+    \multirow{6}{*}{$\delta=10$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/8}&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c}{1/32}\\
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\
+&1&1105	&1.38e+00	&5000	&1.38e+00	&5000	&1.65e+00\\
+&2&388	&7.20e-01	&3201	&7.14e-01	&5000	&9.38e-01\\
+&3&171	&3.33e-01	&1405	&3.28e-01	&5000	&4.60e-01\\
+&4&102	&1.47e-01	&838	&1.42e-01	&5000	&1.42e-01\\
+    \cline{1-8}     	
+      \multirow{6}{*}{$\delta=10^{-2}$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/8}&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c}{1/32}\\ 
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\ 
+
+&1&5000	&8.43e-01	&5000	&1.41e+00	&5000	&1.72e+00\\
+&2&5000	&7.89e-01	&5000	&1.37e+00	&5000	&1.71e+00\\
+&3&5000	&7.51e-01	&5000	&1.38e+00	&5000	&1.71e+00\\
+&4&5000	&7.43e-01	&5000	&1.37e+00	&5000	&1.71e+00\\
+
+      \hline      
+  \hline
+  
+\hline
+
+
+
+
+    \hline     
+    \hline
+    \multicolumn{8}{c}{example3}\\
+         \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline
+    \multirow{6}{*}{$\delta=10$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/8}&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c}{1/32}\\
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\
+&1&4196	&1.32e+00	&5000	&2.44e+00	&5000	&2.27e+00\\
+&2&1724	&7.55e-01	&5000	&1.74e+00	&5000	&2.18e+00\\
+&3&963	&3.97e-01	&5000	&7.40e-01	&5000	&2.07e+00\\
+&4&724	&2.20e-01	&5000	&2.56e-01	&5000	&1.99e+00\\
+ 
+      \hline      
+  \hline
+  
+\hline
+
+
+    \end{tabular}
+\end{table}
+可以看出，$h$越小，解越不光滑, 则对$MA^{WS}_{h,\theta,\delta}$的正则要求越高，即是需要$\delta$越大. 在第三个例子中取$\delta=10$也不能在$5000$步内收敛,同时$\delta$越大，收敛得到的数值解与真解的误差也就越大.总的来说效果不理想。下面我们考虑Netwon法.
+
+
+
+由于非正则化的Netwon法得到的梯度矩阵奇异性较大，初值只有落在真解的一个小区间内才收敛。故我们测试正则化的Netwon法，同时对应的正则化因子$\delta$大时，梯度矩阵奇异性较小，但数值解与真解的误差较大，故我们可以先选取较大的$\delta$，等用Netwon法收敛之后，减小$\delta$，再用之前得到的数值解作为迭代初值，再用正则化的Netwon法迭代至解收敛，再减小$\delta$(如令$\delta^{n+1}=\delta^{n}/2$),如此重复，直到$\delta$充分小或者本次迭代收敛值和初值相差充分小即可。对于三个数值算例, 分别取定$\delta_{max},$取收敛条件为:
+$$\delta^{n}<1e-6\text{ or  }\Vert{u^{n}-u^{n-1}}\Vert_\infty{}<1e-8$$
+其中$u^{n}$为以$u^{n-1}$为初值,$\delta$取为$\delta^n$的收敛结果.
+
+\begin{table}[ht!]
+\centering
+\caption{正则化Explicit solution method}
+\label{table}
+    \begin{tabular}{  c| c|c c|c c| c c }
+          \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline
+    \multicolumn{8}{c}{example1}\\
+         \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline   
+    \multirow{6}{*}{$\delta_{max}=2$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c|}{1/32}&\multicolumn{2}{|c}{1/64}\\
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\
+&1&171	&2.03e-03	&177	&1.69e-03	&180	&1.61e-03\\
+&2&179	&1.07e-03	&186	&6.37e-04	&190	&4.92e-04\\
+&3&184	&1.42e-03	&192	&4.27e-04	&202	&2.51e-04\\
+&4&183	&3.27e-03	&199	&6.02e-04	&217	&2.09e-04\\      \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline
+    \multicolumn{8}{c}{example2}\\
+         \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline
+    \multirow{6}{*}{$\delta_{max}=5$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/8}&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c}{1/32}\\
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\
+&1&1092	&2.59e-03	&558	&2.38e-03	&1150	&2.13e-03\\
+&2&487	&1.71e-03	&384	&8.02e-04	&466	&6.63e-04\\
+&3&370	&1.15e-03	&334	&5.65e-04	&348	&3.12e-04\\
+&4&340	&1.84e-03	&338	&4.53e-04	&368	&2.42e-04\\
+        \hline      
+  \hline
+  
+\hline
+
+
+
+
+    \hline     
+    \hline
+    \multicolumn{8}{c}{example3}\\
+         \hline      
+  \hline
+  
+\hline
+
+
+
+    \hline     
+    \hline
+    \multirow{6}{*}{$\delta=5$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/8}&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c}{1/32}\\
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\
+&1&315	&4.45e-03	&486	&1.58e-03	&10	&4.67e+06\\
+&2&240	&4.40e-03	&273	&1.58e-03	&25	&1.79e+07\\
+&3&225	&1.97e-03	&258	&1.03e-03	&20	&4.80e+05\\
+&4&226	&3.99e-03	&257	&1.46e-03	&42	&2.28e+06\\
+  \cline{1-8}     	
+      \multirow{6}{*}{$\delta=10$}
+   &wide$\setminus$  h:	&\multicolumn{2}{|c|}{1/8}&\multicolumn{2}{|c|}{1/16}&\multicolumn{2}{|c}{1/32}\\ 
+&	&迭代次数	&误差	&迭代次数	&误差  &迭代次数	&误差		\\ 
+
+&1&492	&4.45e-03	&778	&1.58e-03	&1561	&8.62e-04\\
+&2&314	&4.40e-03	&416	&1.58e-03	&578	&5.59e-04\\
+&3&271	&1.97e-03	&313	&1.03e-03	&351	&5.59e-04\\
+&4&261	&3.99e-03	&302	&1.46e-03	&360	&3.45e-04\\      \hline      
+  \hline
+  
+\hline
+
+
+    \end{tabular}
+\end{table}
+可以看出,Netwon法的收敛速度比显示法快很多。但是Netwon法得到的矩阵可能有较强的奇异性，只有在初值选取较好时才能较好收敛，为此好的初值选取很重要。
+\section{代码说明}
+本次程序使用matlab编写，包含main.m和Readme.txt等在内一共有24个文件，在文件夹‘matlabcode’中. 关于各文件的含义以及main.m的运行参见Readme.txt.
+
+
+
+
+
+\end{document}
